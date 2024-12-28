@@ -1,3 +1,8 @@
+log
+/build/
+/cmake-build-release-visual-studio/
+
+# Github C++.gitignore template below:
 # Prerequisites
 *.d
 
