@@ -41,7 +41,7 @@ void processFrames(YoloOnnxModel& yolo) {
             auto detections = yolo.infer(frame, 0.4f, 0.4f);
             for (const auto& [box, label] : detections) {
                 cv::rectangle(frame, box, cv::Scalar(255, 0, 0), 2);
-                cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 0, 0));
+                cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 0, 0));
             }
 
             cv::imshow("Live Camera Feed (RTSP)", frame);

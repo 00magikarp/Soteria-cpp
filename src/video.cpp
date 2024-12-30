@@ -10,25 +10,43 @@ int main(const int argc, const char* argv[]) {
         return -1;
     }
 
-    std::string pathToModel = "include/model/yolo11n.onnx";
+    std::string pathToModel = "include/model/yolo11s.onnx";
     std::string pathToNames = "include/coco.names";
     constexpr bool isGPU = false; // set to false if your GPU does not support CUDA 😭😭😭
 
     YoloOnnxModel yolo(pathToModel, pathToNames, isGPU);
 
     std::string video_path = std::filesystem::absolute(argv[1]).string(); // Specify your video file path here
-    cv::VideoCapture cap(video_path);
+    cv::VideoCapture originalCap(video_path);
 
-    if (!cap.isOpened()) {
+    if (!originalCap.isOpened()) {
         std::cerr << "Error: Could not open the video file." << std::endl;
         return -1;
     }
 
+    std::filesystem::path inputPath(video_path);
+    std::string fileName = inputPath.stem().string();
+    std::string fileExtension = inputPath.extension().string();
+
+    double fps = originalCap.get(cv::CAP_PROP_FPS);
+    int frameWidth = static_cast<int>(originalCap.get(cv::CAP_PROP_FRAME_WIDTH));
+    int frameHeight = static_cast<int>(originalCap.get(cv::CAP_PROP_FRAME_HEIGHT));
+    cv::Size frameSize(frameWidth, frameHeight);
+
+    auto outputFilePath = std::filesystem::current_path() / "out" / (fileName + "-processed" + fileExtension);
+    std::cout << outputFilePath;
+
+    cv::VideoWriter videoWriter(
+        outputFilePath.string(),
+        cv::VideoWriter::fourcc('X', '2', '6', '4'),
+        fps,
+        frameSize
+        );
+
     cv::Mat frame;
-    std::vector<cv::Mat> processed;
 
     while (true) {
-        cap >> frame;
+        originalCap >> frame;
         if (frame.empty()) {
             std::cout << "no frame captured, breaking" << std::endl;
             break;
@@ -38,32 +56,14 @@ int main(const int argc, const char* argv[]) {
 
         for (const auto& [box, label] : detections) {
             cv::rectangle(frame, box, cv::Scalar(255, 0, 0), 2);
-            cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 0, 0));
+            cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 0, 0));
         }
 
-        processed.emplace_back(frame.clone());
+        videoWriter.write(frame);
     }
 
-    cv::namedWindow("Video Feed", cv::WINDOW_KEEPRATIO);
-    double fps = cv::max(30.0, cap.get(cv::CAP_PROP_FPS));
-    int frameDelayInMs = static_cast<int>(1000.0 / fps);
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (const auto& frame : processed) {
-        const auto frameStart = std::chrono::high_resolution_clock::now();
-        cv::imshow("Video Feed", frame);
-        const auto currentTime = std::chrono::high_resolution_clock::now();
-        const int delay = frameDelayInMs - static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                 currentTime - frameStart).count());
-        if (cv::waitKey(std::max(1, delay)) == 'q') break;
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
-
-    cap.release();
-    cv::destroyAllWindows();
+    originalCap.release();
+    videoWriter.release();
 
     return 0;
 }
