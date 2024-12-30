@@ -13,6 +13,12 @@ set(ONNX_RUNTIME_INCLUDE_DIR "${ONNX_RUNTIME_DIR}/include")
 set(ONNX_RUNTIME_LIB_DIR "${ONNX_RUNTIME_DIR}/lib")
 include_directories(${ONNX_RUNTIME_INCLUDE_DIR})
 
+set(SPDLOG_DIR "C:/tools/spdlog")
+set(SPDLOG_INCLUDE_DIR "${SPDLOG_DIR}/include")
+set(SPDLOG_LIB_DIR "${SPDLOG_DIR}/lib")
+include_directories(${SPDLOG_INCLUDE_DIR})
+link_directories(${SPDLOG_LIB_DIR})
+
 add_executable(camera
         src/camera.cpp
         include/YoloOnnxModel.cpp
@@ -32,6 +38,10 @@ add_executable(rtsp
 target_link_libraries(camera ${OpenCV_LIBS})
 target_link_libraries(video ${OpenCV_LIBS})
 target_link_libraries(rtsp ${OpenCV_LIBS})
+
+target_link_libraries(camera "${SPDLOG_LIB_DIR}/spdlogd.lib")
+target_link_libraries(video "${SPDLOG_LIB_DIR}/spdlogd.lib")
+target_link_libraries(rtsp "${SPDLOG_LIB_DIR}/spdlogd.lib")
 
 if(WIN32)
     target_link_libraries(camera "${ONNX_RUNTIME_LIB_DIR}/onnxruntime.lib")

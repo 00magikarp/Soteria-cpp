@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    std::string pathToModel = "include/model/yolo11n.onnx";
+    std::string pathToModel = "include/model/yolo11s.onnx";
     std::string pathToNames = "include/coco.names";
     constexpr bool isGPU = false; // set to false if your GPU does not support CUDA 😭😭😭
 
