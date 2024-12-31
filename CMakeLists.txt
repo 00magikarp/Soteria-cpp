@@ -20,7 +20,6 @@ include_directories(${SPDLOG_INCLUDE_DIR})
 link_directories(${SPDLOG_LIB_DIR})
 
 add_executable(camera
-        src/camera.cpp
         include/YoloOnnxModel.cpp
         include/YoloOnnxModel.h
 )
@@ -30,7 +29,7 @@ add_executable(video
         include/YoloOnnxModel.h
 )
 add_executable(rtsp
-        src/rtsp.cpp
+        src/live.cpp
         include/YoloOnnxModel.cpp
         include/YoloOnnxModel.h
 )

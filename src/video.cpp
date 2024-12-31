@@ -17,9 +17,9 @@ int main(const int argc, const char* argv[]) {
     YoloOnnxModel yolo(pathToModel, pathToNames, isGPU);
 
     std::string video_path = std::filesystem::absolute(argv[1]).string(); // Specify your video file path here
-    cv::VideoCapture originalCap(video_path);
+    cv::VideoCapture cap(video_path);
 
-    if (!originalCap.isOpened()) {
+    if (!cap.isOpened()) {
         std::cerr << "Error: Could not open the video file." << std::endl;
         return -1;
     }
@@ -28,9 +28,9 @@ int main(const int argc, const char* argv[]) {
     std::string fileName = inputPath.stem().string();
     std::string fileExtension = inputPath.extension().string();
 
-    double fps = originalCap.get(cv::CAP_PROP_FPS);
-    int frameWidth = static_cast<int>(originalCap.get(cv::CAP_PROP_FRAME_WIDTH));
-    int frameHeight = static_cast<int>(originalCap.get(cv::CAP_PROP_FRAME_HEIGHT));
+    double fps = cap.get(cv::CAP_PROP_FPS);
+    int frameWidth = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));
+    int frameHeight = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
     cv::Size frameSize(frameWidth, frameHeight);
 
     auto outputFilePath = std::filesystem::current_path() / "out" / (fileName + "-processed" + fileExtension);
@@ -46,7 +46,7 @@ int main(const int argc, const char* argv[]) {
     cv::Mat frame;
 
     while (true) {
-        originalCap >> frame;
+        cap >> frame;
         if (frame.empty()) {
             std::cout << "no frame captured, breaking" << std::endl;
             break;
@@ -56,13 +56,13 @@ int main(const int argc, const char* argv[]) {
 
         for (const auto& [box, label] : detections) {
             cv::rectangle(frame, box, cv::Scalar(255, 0, 0), 2);
-            cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 0, 0));
+            cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 0, 0));
         }
 
         videoWriter.write(frame);
     }
 
-    originalCap.release();
+    cap.release();
     videoWriter.release();
 
     return 0;
