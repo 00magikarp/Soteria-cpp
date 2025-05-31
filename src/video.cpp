@@ -10,7 +10,7 @@ int main(const int argc, const char* argv[]) {
         return -1;
     }
 
-    std::string pathToModel = "include/model/yolo11n.onnx";
+    std::string pathToModel = "include/model/yolo11m.onnx";
     std::string pathToNames = "include/coco.names";
     constexpr bool isGPU = false; // set to false if your GPU does not support CUDA 😭😭😭
 
@@ -37,22 +37,27 @@ int main(const int argc, const char* argv[]) {
         auto detections = yolo.infer(frame, 0.5f, 0.4f);
 
         for (const auto& [box, label] : detections) {
-            cv::rectangle(frame, box, cv::Scalar(255, 0, 0), 2);
-            cv::putText(frame, label, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 0, 0));
+            cv::rectangle(frame, box, cv::Scalar(0, 0, 255), 4);
+            cv::putText(frame, label, cv::Point(box.x, box.y - 10), cv::FONT_HERSHEY_DUPLEX, 1.5, cv::Scalar(0, 0, 255), 3);
         }
 
         processed.emplace_back(frame.clone());
     }
 
-    cv::namedWindow("Video Feed", cv::WINDOW_KEEPRATIO);
-    double fps = cv::max(30.0, cap.get(cv::CAP_PROP_FPS));
+    cv::namedWindow("Video Feed", cv::WINDOW_AUTOSIZE);
+    cv::imshow("Video Feed", processed[0]);
+    cv::setWindowProperty("Video Feed", cv::WND_PROP_TOPMOST, 1);
+    cv::waitKey(1);
+    double fps = cv::max(10.0, cap.get(cv::CAP_PROP_FPS));
     int frameDelayInMs = static_cast<int>(1000.0 / fps);
 
     auto start = std::chrono::high_resolution_clock::now();
 
     for (const auto& frame : processed) {
         const auto frameStart = std::chrono::high_resolution_clock::now();
-        cv::imshow("Video Feed", frame);
+        cv::Mat displayFrame;
+        cv::resize(frame, displayFrame, cv::Size(1280, 720));
+        cv::imshow("Video Feed", displayFrame);
         const auto currentTime = std::chrono::high_resolution_clock::now();
         const int delay = frameDelayInMs - static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                  currentTime - frameStart).count());
